@@ -1,32 +1,40 @@
 package org.example.pojo;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 
+
+@Getter
+@Setter
+@Data
 public class Session{
-    public int center_id;
-    public String name;
-    public String address;
-    public String state_name;
-    public String district_name;
-    public String block_name;
-    public int pincode;
-    public String from;
+    private int center_id;
+    private String name;
+    private String address;
+    private String state_name;
+    private String district_name;
+    private String block_name;
+    private int pincode;
+    private String from;
     @JsonProperty("to")
-    public String to;
-    public int lat;
+    private String to;
+    private int lat;
    @JsonProperty("long")
-    public int mylong;
-    public String fee_type;
-    public String session_id;
-    public String date;
-    public int available_capacity;
-    public int available_capacity_dose1;
-    public int available_capacity_dose2;
-    public String fee;
-    public boolean allow_all_age;
-    public int min_age_limit;
-    public int max_age_limit;
-    public String vaccine;
-    public ArrayList<Slot> slots;
+    private int mylong;
+    private String fee_type;
+    private String session_id;
+    private String date;
+    private int available_capacity;
+    private int available_capacity_dose1;
+    private int available_capacity_dose2;
+    private String fee;
+    private boolean allow_all_age;
+    private int min_age_limit;
+    private int max_age_limit;
+    private String vaccine;
+    private ArrayList<Slot> slots;
 }

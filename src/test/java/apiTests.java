@@ -1,138 +1,109 @@
-import io.restassured.RestAssured;
-import io.restassured.response.Response;
-import org.example.pojo.State;
-import org.example.pojo.Session;
+import org.example.apiresponse.ApiSetuResponse;
 import org.example.pojo.District;
-import org.example.pojo.DistrictList;
-import org.example.pojo.SessionList;
-import org.example.pojo.Slot;
+import org.example.pojo.Session;
+import org.example.pojo.State;
 import org.example.pojo.StateList;
 import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.Objects;
 
-public class apiTests
-{
-    //Validity 1: Validate that the state id of karnataka is 16
-    @Test
-    void valid1()
-    {
-        String queryState="Karnataka";
-        int queryStateId=16;
+import static org.testng.Assert.assertTrue;
 
-        Response res= RestAssured.get("https://cdn-api.co-vin.in/api/v2/admin/location/states");
-        StateList slist= res.getBody().as(StateList.class);
+public class apiTests {
+    private ApiSetuResponse apiSetuResponse;
+    private StateList stateResponse;
+    private String date;
 
-int flag=0;
-        for(State x : slist.states)
-        {
-            if (x.state_id==queryStateId)
-
-                if (x.state_name.equals(queryState)) {
-
-                     flag=1;
-                }
-        }
-Assert.assertEquals(flag,1);
-
-
+    @BeforeClass
+    public void init() {
+        apiSetuResponse = new ApiSetuResponse();
+        stateResponse = apiSetuResponse.getStateResponse();
+        String pattern = "dd-MM-yyyy";
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+        date = simpleDateFormat.format(new Date());
     }
 
-    //Validity 2: Validate the district id of Bangalore Urban is "265"
+    //1) Validate the state id of Karnataka is "16".
     @Test
-    void valid2()
-    {
-        String queryDistrict="Bangalore Urban";
-        int queryDistrictId=265;
-
-        Response res = RestAssured.get("https://cdn-api.co-vin.in/api/v2/admin/location/districts/16/");
-        DistrictList dlist= res.getBody().as(DistrictList.class);
-
-        int flag=0;
-        for(District x : dlist.districts)
-        {
-            if (x.district_id==queryDistrictId)
-
-                if (x.district_name.equals(queryDistrict)) {
-
-                    flag=1;
-                }
-        }
-        Assert.assertEquals(flag,1);
-    }
-    //3. Validate  that all states/UTs have their state_id
-    @Test
-    void valid3()
-    {
-
-
-        Response res= RestAssured.get("https://cdn-api.co-vin.in/api/v2/admin/location/states");
-        StateList slist= res.getBody().as(StateList.class);
-
-        int len= slist.states.size();
-        int c=0;
-
-        for(State x : slist.states)
-        {
-            if(x.state_id!=0)
-            {
-                c++;
+    public void validateStateId() {
+        int stateId = 16;
+        String stateName = "Karnataka";
+        boolean checkStateId = false;
+        for (State state : stateResponse.getStates()) {
+            if (Objects.equals(state.getState_name(), stateName) && Objects.equals(state.getState_id(), stateId)) {
+                checkStateId = true;
+                break;
             }
         }
-        Assert.assertEquals(c,len);
+        assertTrue(checkStateId, "State ID of Karnataka is not 16");
     }
 
-    //Validate the price of vaccine does in Hospital "Springleaf Healthcare [State :   Karnataka, District : Bangalore Urban] is > Rs 300
+    //2) Validates that the district ID of Bangalore Urban is 265
     @Test
-    void valid4()
-    {
-        Response res= RestAssured.get("https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/findByDistrict?district_id=265&date=28-01-2023");
-        SessionList slist= res.getBody().as(SessionList.class);
-        String queryState="Karnataka";
-        String queryDistrict="Bangalore Urban";
-        String hospital= "Springleaf Healthcare";
-        int fee_limit=300;
-        int flag=0;
-        for(Session s:slist.sessions)
-        {
-            if(Objects.equals(s.state_name, queryState) && Objects.equals(s.district_name, queryDistrict) && Objects.equals(s.name, hospital))
-            {
-                float price= Float.parseFloat(s.fee);
-                if(price>fee_limit)
-                {
-                    flag=1;
+    public void validateDistrictId() {
+        ArrayList<District> districts = apiSetuResponse.getDistrictResponse(16).getDistricts();
+        int districtId = 265;
+        boolean checkDistrictId = false;
+        String districtName = "Bangalore Urban";
+        for (District district : districts) {
+            if (Objects.equals(district.getDistrict_name(), districtName) && Objects.equals(district.getDistrict_id(), districtId)) {
+                checkDistrictId = true;
+                break;
+            }
+        }
+        assertTrue(checkDistrictId, "District ID of Bangalore Urban is not 265");
+    }
+
+    //Validate all states have their ids
+    @Test
+    public void validateAllStateHaveIds() {
+        ArrayList<State> states = stateResponse.getStates();
+        boolean checkIds = true;
+        for (State state : states) {
+            if (state.getState_id() == 0) {
+                checkIds = false;
+                break;
+            }
+        }
+        assertTrue(checkIds, "All states doesn't have their IDs");
+    }
+
+
+    //Validates that Springleaf Healthcare's vaccine fees > Rs 300
+    @Test
+    public void validateVaccineFee() {
+        ArrayList<Session> sessions = apiSetuResponse.getHospitals(265, date).getSessions();
+        float limit = 300;
+        String hospitalName = "Springleaf Healthcare";
+        boolean checkPrice = false;
+        for (Session session : sessions) {
+            if (Objects.equals(session.getName(), hospitalName)) {
+                float fee = Float.parseFloat(session.getFee());
+                if (fee >= limit) {
+                    checkPrice = true;
                     break;
                 }
-
-
             }
         }
-        Assert.assertEquals(flag,1);
-
+        Assert.assertTrue(checkPrice, "Springleaf Healthcare's vaccine have price less than 300.");
     }
 
-    //Validate that atleast one Hospital is providing vaccine as Free
+    //Validates that there exists at least 1 free vaccine center
     @Test
-    void valid5()
-    {
-        Response res= RestAssured.get("https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/findByDistrict?district_id=265&date=28-01-2023");
-        SessionList slist= res.getBody().as(SessionList.class);
-        String free_fee="Free";
-
-        int flag=0;
-        for(Session s:slist.sessions)
-        {
-            if(Objects.equals(s.fee_type, free_fee))
-            {
-               flag=1;
-               break;
-
+    public void validateanyHospitalWithFreeVaccine() {
+        ArrayList<Session> sessions = apiSetuResponse.getHospitals(265, date).getSessions();
+        boolean freeVaccine = false;
+        for (Session session : sessions) {
+            if (Objects.equals(session.getFee_type(), "Free")) {
+                freeVaccine = true;
+                break;
             }
-
         }
-        Assert.assertEquals(flag,1);
-
-
+        Assert.assertTrue(freeVaccine, "Free vaccine is not available in any hospital");
     }
 }

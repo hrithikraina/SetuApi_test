@@ -1,6 +1,11 @@
 package org.example.pojo;
+import lombok.*;
 
+
+@Getter
+@Setter
+@Data
 public class Slot {
-    public String time;
-    public int seats;
+    private String time;
+    private int seats;
 }

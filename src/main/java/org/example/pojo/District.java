@@ -1,6 +1,12 @@
 package org.example.pojo;
 
+import lombok.*;
+
+
+@Getter
+@Setter
+@Data
 public class District {
-    public int district_id;
-    public String district_name;
+    private int district_id;
+    private String district_name;
 }
