@@ -59,7 +59,7 @@ public class apiTests {
         assertTrue(checkDistrictId, "District ID of Bangalore Urban is not 265");
     }
 
-    //Validate all states have their ids
+    //3) Validate all states have their ids
     @Test
     public void validateAllStateHaveIds() {
         ArrayList<State> states = stateResponse.getStates();
@@ -74,7 +74,7 @@ public class apiTests {
     }
 
 
-    //Validates that Springleaf Healthcare's vaccine fees > Rs 300
+    //4) Validates that Springleaf Healthcare's vaccine fees > Rs 300
     @Test
     public void validateVaccineFee() {
         ArrayList<Session> sessions = apiSetuResponse.getHospitals(265, date).getSessions();
@@ -93,7 +93,7 @@ public class apiTests {
         Assert.assertTrue(checkPrice, "Springleaf Healthcare's vaccine have price less than 300.");
     }
 
-    //Validates that there exists at least 1 free vaccine center
+    //5) Validates that there exists at least 1 free vaccine center
     @Test
     public void validateanyHospitalWithFreeVaccine() {
         ArrayList<Session> sessions = apiSetuResponse.getHospitals(265, date).getSessions();

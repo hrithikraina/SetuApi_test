@@ -1,8 +1,7 @@
 package org.example.pojo;
 
 import lombok.*;
-
-
+@NoArgsConstructor
 @Getter
 @Setter
 @Data
